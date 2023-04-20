@@ -1,0 +1,12 @@
+{
+  "id": 1,
+  "nombre": "Bob Esponja",
+  "descripcion": "Version morado",
+  "tipo": "POP",
+  "genero": "ANIMATION",
+  "franquicia": "Harry potter",
+  "numero": 1,
+  "exclusivo": true,
+  "caracteristicasEspeciales": "Color brillante",
+  "valor": 99
+}

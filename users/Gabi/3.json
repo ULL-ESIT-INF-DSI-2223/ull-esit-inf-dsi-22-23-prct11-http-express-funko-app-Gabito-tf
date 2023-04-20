@@ -1,0 +1,12 @@
+{
+  "id": 3,
+  "nombre": "Bulbasur",
+  "descripcion": "Prueba",
+  "tipo": "POP",
+  "genero": "POP",
+  "franquicia": "pokemon",
+  "numero": 99,
+  "exclusivo": true,
+  "caracteristicasEspeciales": "no",
+  "valor": 50
+}

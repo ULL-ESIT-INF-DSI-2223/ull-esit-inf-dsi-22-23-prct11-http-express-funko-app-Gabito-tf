@@ -1,0 +1,12 @@
+{
+  "id": 2,
+  "nombre": "Pikachu",
+  "descripcion": "Version azul",
+  "tipo": "POP",
+  "genero": "ANIMATION",
+  "franquicia": "Pokemon",
+  "numero": 1,
+  "exclusivo": false,
+  "caracteristicasEspeciales": "",
+  "valor": 20
+}
