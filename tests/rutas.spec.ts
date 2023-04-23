@@ -3,6 +3,7 @@ import chaiHttp from 'chai-http';
 import app from '../dist/server.js'; // Asegúrese de exportar su aplicación Express en app.js
 import { FunkoPop } from '../dist/models/FunkoPop.js';
 import {expect} from 'chai';
+import { server } from '../dist/server.js';
 
 chai.use(chaiHttp);
 
@@ -168,6 +169,11 @@ describe('Funko routes', () => {
         });
     });
   });
+
+  after((done) => {
+    server.close(done);
+  });
+  
 
 });
 
