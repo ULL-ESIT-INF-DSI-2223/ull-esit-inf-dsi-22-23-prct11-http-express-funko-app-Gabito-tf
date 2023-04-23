@@ -2,13 +2,14 @@
   "name": "practica9",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/FunkoPopApp/app.js",
+  "main": "dist/server.js",
   "type": "module",
   "scripts": {
     "server": "node dist/server.js",
     "doc": "typedoc",
     "test": "mocha",
-    "coverage": "c8 npm test && c8 report --reporter=lcov"
+    "coverage": "c8 npm test && c8 report --reporter=lcov",
+    "start": "tsc-watch --onSuccess \"node dist/server.js\""
   },
   "keywords": [],
   "author": "",
@@ -35,11 +36,12 @@
     "typescript": "^4.9.5"
   },
   "dependencies": {
+    "ajv": "^8.12.0",
     "body-parser": "^1.20.2",
     "chalk": "^5.2.0",
+    "cors": "^2.8.5",
     "express": "^4.18.2",
     "net": "^1.0.2",
-    "request": "^2.88.2",
     "yargs": "^17.7.1"
   },
   "directories": {

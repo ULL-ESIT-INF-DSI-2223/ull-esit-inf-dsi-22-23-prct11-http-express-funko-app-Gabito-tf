@@ -1,538 +1,438 @@
-# Práctica 10 
+# Funko Pop API
 
-Gabi Vacaru, alu0101098340
-<br>
-Desarrollo de Sistemas Informáticos
+Este proyecto es una API para gestionar Funko Pops. La API permite agregar, actualizar, eliminar, listar y obtener información de los Funko Pops de cada usuario.
 
+## Estructura del Proyecto
 
-## Índice de contenidos<a name="id0"></a>
-  - [Ejercicio 1](#id1)
+El proyecto se divide en las siguientes partes:
 
-  - [Ejercicio 2](#id2)
+- `controllers`: Contiene la lógica principal de la aplicación.
+- `models`: Define los tipos de datos utilizados en la aplicación.
+- `routes`: Define las rutas de la API.
+- `utils`: Proporciona funciones de utilidad relacionadas con el sistema de archivos.
 
-  - [Ejercicio 3](#id3)
-    - [Clase](#id3.1)
-    - [Servidor](#id3.2)
-    - [Cliente](#id3.3)
+## Models
 
-  ### Ejercicio 1<a name="id1"></a>
-  Nos encontramos con un programa que utiliza el módulo 'fs' de Node.js para monitorear cambios en un archivo específico. Al ejecutar el programa, teneoms que poner un nombre de archivo como argumento, este verifica si el archivo existe, en caso afirmativo, comienza a monitorearlo. Cada vez que el archivo se modifica, el programa muestra un mensaje en la consola informando que el archivo ha sido modificado de alguna manera.
+### FunkoPop.ts
 
-    Para resumir el comportamiento de mismo lo voy a reducir a una tabla:
-
-    | Paso | Pila de llamadas                     | Registro de eventos API| Cola de manejadores | Mensajes consola                                    |
-    |------|--------------------------------------|------------------------|---------------------|-----------------------------------------------------|
-    | 1    | Vacía                                |                        |                     |                                                     |
-    | 2    | Función de devolución de llamada     |                        |                     |                                                     |
-    | 3    | Vacía                                |                        |                     | "Starting to watch file helloworld.txt"             |
-    | 4    |                                      | Evento 'change'        |                     | "File helloworld.txt is no longer watched"          |
-    | 5    |                                      |                        | Manejador 'change'  |                                                     |
-    | 6    | Manejador de eventos 'change'        |                        |                     | "File helloworld.txt has been modified somehow" (1) |
-    | 7    | Vacía                                |                        |                     |                                                     |
-    | 8    |                                      |                        | Manejador 'change'  |                                                     |
-    | 9    | Manejador de eventos 'change'        |                        |                     | "File helloworld.txt has been modified somehow" (2) |
-    | 10   | Vacía                                |                        |                     |                                                     |
-
-La función access en el módulo 'fs' de Node.js se utiliza para verificar si un archivo existe y si se puede acceder con los permisos requeridos. La función access es asíncrona y acepta una función de devolución de llamada (callback) que se ejecuta cuando se completa la verificación.
-
-En el programa proporcionado, la función access se llama con los argumentos filename, constants.F_OK y una función de devolución de llamada. La función verifica si el archivo filename existe utilizando la flag constants.F_OK.
-
-El objeto constants es parte del módulo 'fs' y contiene constantes relacionadas con el módulo. Estas constantes incluyen flags de acceso a archivos y otras constantes utilizadas en las operaciones de archivos. En este caso, se utiliza constants.F_OK para la comprobación de la existencia del archivo en la función access. constants.F_OK es una flag que indica que la función access debe verificar solo la existencia del archivo, independientemente de si se puede leer, escribir o ejecutar.
-
-### Ejercicio 2<a name="id2"></a>
-
-En este ejercicio, se nos pide que creemos un programa que dado un archivo por consola, ejecute el comando WC, para poder contar en número de líneas, palabras y caracteres que tiene el archivo. Tambien se nos pide que realizemos el programa de dos formas distinas, una de ellas usando pipes y la otra usando streams.
-
-Para ejecutar el programa, debemos poner el siguiente comando en la consola:
 ```typescript
-    node dist/ejercicio2.js <nombre_archivo> --pipe --lineas --palabras --caracteres
-```
-En cuanto al código del mismo importamos los módulos necesarios para poder ejecutar el programa, en este caso, los módulos 'fs' y 'yargs' de Node.js. También importamos la función spawn del módulo 'child_process' de Node.js, que se utiliza para ejecutar comandos en una nueva terminal.
-```typescript
-    import fs from "fs";
-    import yargs from "yargs/yargs";
-    import { hideBin } from "yargs/helpers";
-    import { spawn } from "child_process";
+export type FunkoPop = {
+  id: number;
+  name: string;
+  description: string;
+  type: string;
+  genre: string;
+  franchise: string;
+  number: number;
+  exclusive: boolean;
+  specialFeatures: string;
+  marketValue: number;
+};
 ```
 
-Luego hemos creado una interfaz para poder definir los argumentos que se le pasan al programa, en este caso, el nombre del archivo y las flags que se le pasan al programa para que nos muestre el número de líneas, palabras y caracteres que tiene el archivo.
+`FunkoPop` define el tipo de datos para un Funko Pop con las siguientes propiedades:
+
+- `id`: Identificador único del Funko Pop.
+- `name`: Nombre del Funko Pop.
+- `description`: Descripción del Funko Pop.
+- `type`: Tipo de Funko Pop (ej. Bobble-Head, Vinyl Figure).
+- `genre`: Género al que pertenece el Funko Pop (ej. Anime, Películas).
+- `franchise`: Franquicia a la que pertenece el Funko Pop (ej. Marvel, Star Wars).
+- `number`: Número de serie del Funko Pop.
+- `exclusive`: Si el Funko Pop es exclusivo o no.
+- `specialFeatures`: Características especiales del Funko Pop.
+- `marketValue`: Valor de mercado del Funko Pop.
+
+### ResponseType.ts
+
 ```typescript
-        interface Opciones {
-    _: string[];
-    $0: string;
-    lineas?: boolean;
-    palabras?: boolean;
-    caracteres?: boolean;
-    pipe?: boolean;
-    }
+import { FunkoPop } from './FunkoPop.js';
+
+export type ResponseType = {
+  success: boolean;
+  funkoPops?: FunkoPop[];
+  message?: string;
+};
 ```
 
-Para poder ejecutar esto desde terminal, hemos configurado el yards:
+`ResponseType` define el tipo de datos para las respuestas de la API, incluyendo:
+
+- `success`: Indica si la operación fue exitosa o no.
+- `funkoPops`: Una lista opcional de Funko Pops retornados por la operación.
+- `message`: Un mensaje opcional proporcionado por la operación.
+
+## Utils
+
+### fileSystem.js
+
 ```typescript
-        const opciones: Opciones = yargs(hideBin(process.argv))
-    .usage("Uso: node $0 <Archivo> [opciones]")
-    .option("pipe", {
-        alias: "p",
-        describe: "Utilizar método pipe",
-        type: "boolean",
-    })
-    .option("lineas", {
-        alias: "l",
-        describe: "Ver número de líneas",
-        type: "boolean",
-    })
-    .option("palabras", {
-        alias: "w",
-        describe: "Ver número de palabras",
-        type: "boolean",
-    })
-    .option("caracteres", {
-        alias: "c",
-        describe: "Ver número de caracteres",
-        type: "boolean",
-    })
-    .demandCommand(1).argv as unknown as Opciones;
+import fs from 'fs/promises';
+import path from 'path';
+
+export async function readFile(filePath: string): Promise<Buffer> {
+  try {
+    const data = await fs.readFile(filePath);
+    return data;
+  } catch (error) {
+    throw error;
+  }
+}
 ```
-En este caso, hemos definido que el programa necesita un argumento obligatorio, que es el nombre del archivo, y que además, se le pueden pasar las flags que hemos definido en la interfaz.
 
-En cuanto a la funcion principal del programa, es decir la ejecucion del conmando WC, primero comprobamos si el archivo existe, en caso afirmativo, ejecutamos el comando WC, en caso contrario, mostramos un mensaje de error.
-En caso de que el archivo exista y se le hayan pasado las flags, guardamos los flags en un vector de flags, y ejecutamos el comando WC con las flags correspondntes siempre y cuando se haya pasado mínimo una. El orden es indiferente.
-
-Una vez lanzado el spawn, se comprueba si se ha pasado el flag --pipe, en caso afirmativo, se utiliza el método pipe para mostrar el resultado por pantalla, en caso contrario, se utiliza el método on para mostrar el resultado por pantalla.
+`readFile` lee un archivo y devuelve su contenido como un objeto `Buffer`. Recibe como parámetro la ruta del archivo a leer.
 
 ```typescript
-        fs.access(archivo, fs.constants.F_OK, (err) => {
-    if (err) {
-        console.error(`El archivo ${archivo} no existe`);
-        process.exit(1);
+export async function writeFile(filePath: string, data: string): Promise<void> {
+  try {
+    await fs.writeFile(filePath, data);
+  } catch (error) {
+    throw error;
+  }
+}
+```
+
+`writeFile` escribe datos en un archivo. Recibe como parámetros la ruta del archivo y los datos a escribir.
+
+```typescript
+export async function createDirectory(directoryPath: string): Promise<void> {
+  try {
+    await fs.mkdir(directoryPath, { recursive: true });
+  } catch (error) {
+    throw error;
+  }
+}
+```
+
+`createDirectory` crea un directorio de forma recursiva. Recibe como parámetro la ruta del directorio a crear.
+
+```typescript
+export async function deleteFile(filePath: string): Promise<void> {
+  try {
+    await fs.unlink(filePath);
+  } catch (error) {
+    throw error;
+  }
+}
+```
+
+`deleteFile` elimina un archivo. Recibe como parámetro la ruta del archivo a eliminar.
+
+```typescript
+export async function readDirectory(directoryPath: string): Promise<string[]> {
+  try {
+    const files = await fs.readdir(directoryPath);
+    return files;
+  } catch (error) {
+    throw error;
+  }
+}
+```
+
+`readDirectory` lee el contenido de un directorio y devuelve un array de nombres de archivos. Recibe como parámetro la ruta del directorio a leer.
+
+## Controllers
+
+### funkoController.ts
+
+```typescript
+import { readFile, writeFile, createDirectory, deleteFile, readDirectory } from '../utils/fileSystem.js';
+import path from 'path';
+import { FunkoPop } from '../models/FunkoPop.js';
+import { ResponseType } from '../models/ResponseType.js';
+import { join } from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const funkoDirectory = join(__dirname, '../../funkos');
+```
+
+Importamos las dependencias necesarias y definimos las variables para las rutas de archivo y directorio.
+
+```typescript
+export async function addFunko(user: string, funko: FunkoPop): Promise<ResponseType> {
+  const userDirectory = path.join(funkoDirectory, user);
+  const funkoFile = path.join(userDirectory, `${funko.id}.json`);
+
+  if (!funko.name || !funko.description || !funko.type || !funko.genre || !funko.franchise || !funko.number || !funko.specialFeatures || !funko.marketValue) {
+    return { success: false, message: 'All fields are required.' };
+  }
+
+  try {
+    await createDirectory(userDirectory);
+    await readFile(funkoFile);
+    return { success: false, message: 'Funko Pop with the same ID already exists.' };
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      const funkoData = JSON.stringify(funko, null, 2);
+      await writeFile(funkoFile, funkoData);
+      return { success: true, message: 'Funko Pop added successfully.' };
     } else {
-        const wcOpciones: string[] = [];
-
-        if (opciones.lineas) wcOpciones.push("-l");
-        if (opciones.palabras) wcOpciones.push("-w");
-        if (opciones.caracteres) wcOpciones.push("-c");
-
-        if (wcOpciones.length === 0) {
-        console.error(
-            "Debe especificar al menos una opcion: --lineas, --palabras o --caracteres"
-        );
-        process.exit(1);
-        } else {
-        const wc = spawn("wc", wcOpciones.concat(archivo));
-
-        if (opciones.pipe) {
-            console.log("Utilizando método pipe");
-            wc.stdout.pipe(process.stdout);
-            wc.stderr.pipe(process.stderr);
-        } else {
-            console.log("Utilizando método on");
-            wc.stdout.on("data", (data) => {
-            process.stdout.write(data);
-            });
-
-            wc.stderr.on("data", (data) => {
-            process.stderr.write(data);
-            });
-        }
-        }
+      throw error;
     }
-    });
-```
-### Ejercicio 3<a name="id3"></a>
-En el ejercicio 3, se nos pide que cambiemos lo realizado en la práctica anterior a servidores con sockets.
-#### Clase<a name="id3.1"></a>
-Seguimos manteniendo la misma clase Funko de la práctica pasada, no hay nada que cambiar.
-#### Servidor<a name="id3.2"></a>
-En el servidor, lo primero que hacemos es importar los módulos necesarios para poder ejecutar el programa, en este caso, los módulos 'fs' y 'net' de Node.js. También importamos la clase Funko del archivo 'funko.ts' que hemos creado en el ejercicio anterior.
-```typescript
-    import fs from "fs";
-    import net from "net";
-    import { Funko } from "./funko";
-```
-Tambien se ha creado una interfaz para poder definir correctamente los mensajes que se envian entre el cliente y el servidor.
-```typescript
-interface Message {
-  [key: string]: any;
-  usuario: string;
-  tipo: string;
-  command: string;
-  id?: string;
-  nombre?: string;
-  descripcion?: string;
-  tipo?: string;
-  genero?: string;
-  franquicia?: string;
-  numero?: string;
-  exclusivo?: boolean;
-  caracteristicasEspeciales?: string;
-  valor?: number;
+  }
 }
 ```
 
-Aqui hemos tenido que crear un servidor en el puerto 3000, el cual contiene un switch case con todas las peticiónes que se pueden hacer al servidor. En este caso, se han implementado las siguientes peticiones:
+### updateFunko
+
 ```typescript
-   const server = net.createServer((connection) => {
-  console.log('Client connected');
-
-  connection.on('data', (data) => {
-    const message = JSON.parse(data.toString()) as Message;
-    const dirPath = `users/${message.usuario}`;
-
-    switch (message.command) {
-      case 'read':
-        readFunko(message, connection, dirPath);
-        break;
-      case 'list':
-        listFunkos(message, connection, dirPath);
-        break;
-      case 'remove':
-        removeFunko(message, connection, dirPath);
-        break;
-      case 'update':
-        updateFunko(message, connection, dirPath);
-        break;
-      case 'add':
-        addFunko(message, connection, dirPath);
-        break;
-      default:
-        const noExisteAccion = chalk.red.bold('Tipo de acción no reconocida');
-        connection.write(JSON.stringify({ 'type': 'reply', 'output': noExisteAccion }) + '\n');
-        break;
+export async function updateFunko(user: string, funkoId: number, updatedFunko: Partial<FunkoPop>): Promise<ResponseType> {
+  const userDirectory = path.join(funkoDirectory, user);
+  const funkoFile = path.join(userDirectory, `${funkoId}.json`);
+  try {
+    const funkoData = await readFile(funkoFile);
+    const currentFunko = JSON.parse(funkoData.toString()) as FunkoPop;
+    const newFunko = { ...currentFunko, ...updatedFunko };
+    const newFunkoData = JSON.stringify(newFunko);
+    await writeFile(funkoFile, newFunkoData);
+    return { success: true, message: 'Funko Pop updated successfully.' };
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      return { success: false, message: 'Funko Pop with the specified ID not found.' };
+    } else {
+      throw error;
     }
-  });
+  }
+}
+```
 
-  connection.on('end', () => {
-    console.log('Client disconnected');
-  });
+`updateFunko` actualiza un Funko Pop existente. Recibe como parámetros el nombre de usuario, el ID del Funko Pop y el objeto `Partial<FunkoPop>` con los campos actualizados. Retorna un objeto `ResponseType`.
+
+### deleteFunko
+
+```typescript
+export async function deleteFunko(user: string, funkoId: number): Promise<ResponseType> {
+  const userDirectory = path.join(funkoDirectory, user);
+  const funkoFile = path.join(userDirectory, `${funkoId}.json`);
+
+  try {
+    await deleteFile(funkoFile);
+    return { success: true, message: 'Funko Pop deleted successfully.' };
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      return { success: false, message: 'Funko Pop with the specified ID not found.' };
+    } else {
+      throw error;
+    }
+  }
+}
+```
+
+`deleteFunko` elimina un Funko Pop existente. Recibe como parámetros el nombre de usuario y el ID del Funko Pop. Retorna un objeto `ResponseType`.
+
+### listFunkos
+
+```typescript
+export async function listFunkos(user: string): Promise<ResponseType> {
+  const userDirectory = path.join(funkoDirectory, user);
+
+  try {
+    const files = await readDirectory(userDirectory);
+    const funkoPromises = files.map(async (file) => {
+      const funkoData = await readFile(path.join(userDirectory, file));
+      return JSON.parse(funkoData.toString()) as FunkoPop;
+    });
+    const funkoPops = await Promise.all(funkoPromises);
+    return { success: true, funkoPops };
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      return { success: false, message: 'User not found.' };
+    } else {
+      throw error;
+    }
+  }
+}
+```
+
+`listFunkos` lista todos los Funko Pops de un usuario. Recibe como parámetro el nombre de usuario. Retorna un objeto `ResponseType`.
+
+### getFunko
+
+```typescript
+export async function getFunko(user: string, funkoId: number): Promise<ResponseType> {
+  const userDirectory = path.join(funkoDirectory, user);
+  const funkoFile = path.join(userDirectory, `${funkoId}.json`);
+
+  try {
+    const funkoData = await readFile(funkoFile);
+    const funko = JSON.parse(funkoData.toString()) as FunkoPop;
+    return { success: true, funkoPops: [funko] };
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      return { success: false, message: 'Funko Pop with the specified ID not found.' };
+    } else {
+      throw error;
+    }
+  }
+}
+```
+
+`getFunko` obtiene un Funko Pop específico de un usuario. Recibe como parámetros el nombre de usuario y el ID del Funko Pop. Retorna un objeto `ResponseType`.
+
+## Routes
+
+### router
+
+```typescript
+import express from 'express';
+import { addFunko, updateFunko, deleteFunko, listFunkos, getFunko } from '../controllers/funkoController.js';
+
+const router = express.Router();
+
+router.post('/:user', async (req, res) => {
+  const user = req.params.user;
+  const funko = req.body;
+
+  try {
+    const result = await addFunko(user, funko);
+    res.status(result.success ? 201 : 400).json(result);
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
 });
 
-server.listen(3000, () => {
-  console.log('Server listening at port 3000');
+router.patch('/:user/:funkoId', async (req, res) => {
+  const user = req.params.user;
+  const funkoId = Number(req.params.funkoId);
+  const updatedFunko = req.body;
+
+  try {
+    const result = await updateFunko(user, funkoId, updatedFunko);
+    res.status(result.success ? 200 : 404).json(result);
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+router.delete('/:user/:funkoId', async (req, res) => {
+  const user = req.params.user;
+  const funkoId = Number(req.params.funkoId);
+
+  try {
+    const result = await deleteFunko(user, funkoId);
+    res.status(result.success ? 200 : 404).json(result);
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+router.get('/:user', async (req, res) => {
+  const user = req.params.user;
+
+  try {
+    const result = await listFunkos(user);
+    res.status(result.success ? 200 : 404).json(result);
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+router.get('/:user/:funkoId', async (req, res) => {
+  const user = req.params.user;
+  const funkoId = Number(req.params.funkoId);
+
+  try {
+    const result = await getFunko(user, funkoId);
+    res.status(result.success ? 200 : 404).json(result);
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+export { router as default };
+```
+
+En `routes`, se importa el módulo `express` y las funciones del controlador. Se crea un nuevo enrutador y se definen las rutas para las diferentes acciones: agregar, actualizar, eliminar, listar y obtener Funko Pops.
+
+# server.js
+
+El archivo `server.js` es el punto de entrada principal de la aplicación. Configura y ejecuta el servidor web utilizando el marco de Express y define la configuración y rutas de la aplicación.
+
+```javascript
+import express from 'express';
+import cors from 'cors';
+import funkoRoutes from './routes/funkoRoutes.js';
+
+const app = express();
+```
+
+Se importan los módulos necesarios: `express`, `cors` y `funkoRoutes`. Luego, se crea una instancia de la aplicación Express.
+
+```javascript
+app.use(cors());
+app.use(express.json());
+```
+
+Aquí, se utiliza el middleware `cors` para permitir solicitudes desde cualquier origen y se configura la aplicación para utilizar `express.json()` como middleware para analizar los cuerpos de las solicitudes entrantes en formato JSON.
+
+```javascript
+app.use('/funkos', funkoRoutes);
+```
+
+Se define un prefijo de ruta '/funkos' y se monta el enrutador importado desde `routes/funkoRoutes.js`.
+
+```javascript
+const PORT = process.env.PORT || 3000;
+```
+
+Se configura el puerto en el que se ejecutará el servidor. Si no se define la variable de entorno `PORT`, se utilizará el puerto 3000 por defecto.
+
+```javascript
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+
+export { app as default };
+```
+
+Finalmente, se inicia el servidor en el puerto especificado y se muestra un mensaje en la consola. También se exporta la instancia de la aplicación Express como valor predeterminado para facilitar las pruebas y la importación en otros archivos.
+
+# Pruebas
+# Pruebas de rutas de Funko
+
+Las pruebas realizadas en este archivo se enfocan en las rutas de la API relacionadas con los Funko Pops. Para ello, se utiliza la biblioteca de pruebas Chai y el complemento chai-http para realizar solicitudes HTTP a la API.
+
+```javascript
+import chai from 'chai';
+import chaiHttp from 'chai-http';
+import app from '../dist/server.js';
+import { FunkoPop } from '../dist/models/FunkoPop.js';
+import {expect} from 'chai';
+
+chai.use(chaiHttp);
+```
+
+Se importan las dependencias necesarias, incluyendo la aplicación Express y el modelo `FunkoPop`. Luego, se configura Chai para utilizar el complemento chai-http.
+
+```javascript
+describe('Funko routes', () => {
+  //...
 });
 ```
 
-Una vez solicitado un commando, este ejecutará su correspondiente funcion.
-readFunko(message, connection, dirPath);
-```typescript
-function readFunko(message: Message, connection: net.Socket, dirPath: string): void {
-  if (fs.existsSync(dirPath)) {
-    let found = false;
-    const files = fs.readdirSync(dirPath);
-    files.forEach(file => {
-      const filePath = `${dirPath}/${file}`;
-      const data = fs.readFileSync(filePath, 'utf-8');
-      const funkoJSON = JSON.parse(data);
-      if (funkoJSON.id === message.id) {
-        const funko = new Funko(funkoJSON.id, funkoJSON.nombre, funkoJSON.descripcion, funkoJSON.tipo, funkoJSON.genero, funkoJSON.franquicia, funkoJSON.numero, funkoJSON.exclusivo, funkoJSON.caracteristicasEspeciales, funkoJSON.valor);
-        connection.write(JSON.stringify({ 'type': 'reply', 'output': funko.print() }) + '\n');
-        found = true;
-        console.log(`Se ha enviado la información del funko ${funkoJSON.id} al cliente.`);
-      }
-    });
-    if (found == false) {
-      const noExisteFunko = chalk.red(`No existe ningún funko con el ID = ${message.id} en la colección de ${message.usuario}`);
-      connection.write(JSON.stringify({ 'type': 'reply', 'output':noExisteFunko }) + '\n');
-    }
-  } else {
-    const noExisteColeccion = chalk.red(`El usuario ${message.usuario} no tiene una colección`);
-    connection.write(JSON.stringify({ 'type': 'reply', 'output': noExisteColeccion }) + '\n');
-    return;
-  }
-}
-```
-Aqui se ha creado una funcion para leer un funko, en el cual se comprueba si existe la carpeta del usuario, si existe, se comprueba si existe el funko con el id que se ha pasado por el mensaje, si existe, se crea un objeto de la clase Funko y se envia al cliente, si no existe, se envia un mensaje de error al cliente.
+Se inicia el conjunto de pruebas llamado "Funko routes". A continuación, se detallan las pruebas de cada ruta.
 
-#### listFunkos(message, connection, dirPath);
-```typescript
-function listFunkos(message: Message, connection: net.Socket, dirPath: string): void {
-  if (fs.existsSync(dirPath)) {
-    const files = fs.readdirSync(dirPath);
-    connection.write(JSON.stringify({ 'type': 'reply', 'output': `${message.usuario} Funko Pop collection\n----------------------------` }) + '\n');
-    let output = "";
-    files.forEach(file => {
-      const filePath = `${dirPath}/${file}`;
-      const data = fs.readFileSync(filePath, 'utf-8');
-      const funkoJSON = JSON.parse(data);
-      const funko = new Funko(funkoJSON.id, funkoJSON.nombre, funkoJSON.descripcion, funkoJSON.tipo, funkoJSON.genero, funkoJSON.franquicia, funkoJSON.numero, funkoJSON.exclusivo, funkoJSON.caracteristicasEspeciales, funkoJSON.valor);
-      output += funko.print() + '\n----------------------------\n';
-    });
-    connection.write(JSON.stringify({ 'type': 'reply', 'output': output }) + '\n');
-    console.log(`Se ha enviado la lista de los funkos de ${message.usuario} al cliente.`);
-  } else {
-    const noExisteColeccion = chalk.red(`El usuario ${message.usuario} no tiene una colección`);
-    connection.write(JSON.stringify({ 'type': 'reply', 'output': noExisteColeccion }) + '\n');
-    return;
-  }
-}
-```
-Aqui se ha creado una funcion para listar todos los funkos de un usuario, en el cual se comprueba si existe la carpeta del usuario, si existe, se envia un mensaje al cliente con el nombre de la colección, y se envia un mensaje por cada funko que se encuentre en la carpeta del usuario.
-#### removeFunko(message, connection, dirPath);
-```typescript
-function removeFunko(message: Message, connection: net.Socket, dirPath: string): void {
-  if (fs.existsSync(dirPath)) {
-    let found = false;
-    const files = fs.readdirSync(dirPath);
-    files.forEach(file => {
-      const filePath = `${dirPath}/${file}`;
-      const data = fs.readFileSync(filePath, 'utf-8');
-      const funkoJSON = JSON.parse(data);
-      if (funkoJSON.id === message.id) {
-        fs.unlinkSync(filePath);
-        const eliminadoCorrectamente = chalk.green("Se ha eliminado correctamente el Funko con el ID = " + message.id + " en la colección de " + message.usuario);
-        connection.write(JSON.stringify({ 'type': 'reply', 'output': eliminadoCorrectamente }) + '\n');
-        found = true;
-      }
-    });
-    if (found == false) {
-      const noExisteFunko = chalk.red(`No existe ningún funko con el ID = ${message.id} en la colección de ${message.usuario}`);
-      connection.write(JSON.stringify({ 'type': 'reply', 'output': noExisteFunko }) + '\n');
-    }
-  } else {
-    const noExisteColeccion = chalk.red(`El usuario ${message.usuario} no tiene una colección`);
-    connection.write(JSON.stringify({ 'type': 'reply', 'output': noExisteColeccion }) + '\n');
-    return;
-  }
-}
-```
-Aquí se ha creado una funcion para eliminar un funko, en el cual se comprueba si existe la carpeta del usuario, si existe, se comprueba si existe el funko con el id que se ha pasado por el mensaje, si existe, se elimina el funko, si no existe, se envia un mensaje de error al cliente.
-#### updateFunko(message, connection, dirPath);
-```typescript
-function updateFunko(message: Message, connection: net.Socket, dirPath: string): void {
-  let exist = false;
-  if (fs.existsSync(dirPath)) {
-    const files = fs.readdirSync(dirPath);
-    files.forEach(file => {
-      const filePath = `${dirPath}/${file}`;
-      const data = fs.readFileSync(filePath, 'utf-8');
-      const funkoJSON = JSON.parse(data);
-      if (funkoJSON.id === message.id) {
-        exist = true;
-        for (const key in funkoJSON) {
-          if (message[key] !== undefined) {
-            funkoJSON[key] = message[key];
-          }
-        }
-        fs.writeFileSync(filePath, JSON.stringify(funkoJSON, null, 2));
-        const actualizadoCorrectamente = chalk.green(`El Funko con el ID = ${message.id} ha sido actualizado en la colección de ${message.usuario}`);
-        connection.write(JSON.stringify({ 'type': 'reply', 'output': actualizadoCorrectamente }) + '\n');
-      }
-    });
-    if (!exist) {
-      const noExisteFunko = chalk.red(`No existe ningún funko con el ID = ${message.id} en la colección de ${message.usuario}`);
-      connection.write(JSON.stringify({ 'type': 'reply', 'output': noExisteFunko }) + '\n');
-    }
-  } else {
-    const noExisteColeccion = chalk.red(`El usuario ${message.usuario} no tiene una colección`);
-    connection.write(JSON.stringify({ 'type': 'reply', 'output': noExisteColeccion }));
-    return;
-  }
-}
-```
-Aquí se ha creado una funcion para actualizar un funko, en el cual se comprueba si existe la carpeta del usuario, si existe, se comprueba si existe el funko con el id que se ha pasado por el mensaje, si existe, se actualizan las propiedades del funko, si no existe, se envia un mensaje de error al cliente.
-#### addFunko(message, connection, dirPath);
-```typescript
-function addFunko(message: Message, connection: net.Socket, dirPath: string): void {
-  let exist = false;
-  if (fs.existsSync(dirPath)) {
-    const files = fs.readdirSync(dirPath);
-    files.forEach(file => {
-      const filePath = `${dirPath}/${file}`;
-      const data = fs.readFileSync(filePath, 'utf-8');
-      const funkoJSON = JSON.parse(data);
-      if (funkoJSON.id === message.id) {
-        const yaExisteFunko = chalk.red(`Ya existe un Funko con el ID = ${message.id} en la colección de ${message.usuario}`);
-        connection.write(JSON.stringify({ 'type': 'reply', 'output': yaExisteFunko }) + '\n');
-        exist = true;
-      }
-    });
+## POST /:user
 
-    if (exist === false) {
-      const funkosJSON = {
-        id: message.id,
-        nombre: message.nombre,
-        descripcion: message.descripcion,
-        tipo: message.tipo,
-        genero: message.genero,
-        franquicia: message.franquicia,
-        numero: message.numero,
-        exclusivo: message.exclusivo,
-        caracteristicasEspeciales: message.caracteristicasEspeciales,
-        valor: message.valor
-      }
-      fs.writeFileSync(`${dirPath}/${message.id}.json`,
-      JSON.stringify(funkosJSON, null, 2));
-      const success = chalk.green('Se ha agregado el Funko con el ID = ' + message.id + ' a la colección de ' + message.usuario + '\n');
-      connection.write(JSON.stringify({ 'type': 'reply', 'output': success}));
-    }
-  } else {
-    fs.mkdirSync(dirPath);
-    const funkosJSON = {
-      id: message.id,
-      nombre: message.nombre,
-      descripcion: message.descripcion,
-      tipo: message.tipo,
-      genero: message.genero,
-      franquicia: message.franquicia,
-      numero: message.numero,
-      exclusivo: message.exclusivo,
-      caracteristicasEspeciales: message.caracteristicasEspeciales,
-      valor: message.valor
-    }
-    fs.writeFileSync(`${dirPath}/${message.nombre}.json`, JSON.stringify(funkosJSON, null, 2));
-    const success = chalk.green('Se ha agregado el Funko con el ID = ' + message.id + ' a la colección de ' + message.usuario + '\n');
-    connection.write(JSON.stringify({ 'type': 'reply', 'output': success }) + '\n');
-  }
-```
-Aquí se ha creado una funcion para añadir un funko, en el cual se comprueba si existe la carpeta del usuario, si existe, se comprueba si existe el funko con el id que se ha pasado por el mensaje, si existe, se envia un mensaje de error al cliente, si no existe, se añade el funko, si no existe la carpeta del usuario, se crea la carpeta y se añade el funko.
+Esta ruta debe permitir agregar un nuevo Funko Pop. Se prueban dos casos: éxito al agregar un Funko Pop y falla si faltan campos requeridos.
 
-## 4.3. Cliente
-En cuanto al cliente se ha creado una conexion al puerto 3000 para poder comunicarse con el servidor. Aqui se ha usado yargs para poder pasar los argumentos por consola.
-```typescript
-yargs(hideBin(process.argv))
-  .command('add', 'Adds a funko', { ...commonOptions, ...addOptions }, handleAddCommand)
-  .command('update', 'update a funko', { ...commonOptions, ...optionalAddOptions }, handleUpdateCommand)
-  .command('remove', 'Remove a funko from the collection', commonOptions, handleRemoveCommand)
-  .command('list', 'List a funko collection', { usuario: commonOptions.usuario }, handleListCommand)
-  .command('read', 'Show a concrete funko from the collection', commonOptions, handleReadCommand)
-  .help()
-  .argv;
-```
-Para cada comando se ha creado una funcion que se encarga de enviar el mensaje al servidor. En cada comando hay que poner los argumentos que se van a pasar por consola. He observado que hay dos que se repiten prácticamente en todas las funciones, el usuario y el id, por lo que he creado un objeto con las opciones comunes.
-```typescript
-const commonOptions = {
-  id: {
-    description: 'Funko ID',
-    type: 'number' as const,
-    demandOption: true,
-  },
-  usuario: {
-    description: 'User',
-    type: 'string' as const,
-    demandOption: true,
-  },
-};
-```
-Y otro objeto con las opciones que se repiten en los comandos add y update.
-```typescript
-const addOptions = {
-  nombre: {
-    description: 'Funko Name',
-    type: 'string' as const,
-    demandOption: true,
-  },
-  descripcion: {
-    description: 'Funko description',
-    type: 'string' as const,
-    demandOption: true,
-  },
-  tipo: {
-    description: 'Funko tipo',
-    type: 'string' as const,
-    demandOption: true,
-  },
-  genero: {
-    description: 'Genero de la serie',
-    type: 'string' as const,
-    demandOption: true,
-  },
-  franquicia: {
-    description: 'Funko franquicia',
-    type: 'string' as const,
-    demandOption: true,
-  },
-  numero: {
-    description: 'Numero de la serie',
-    type: 'number' as const,
-    demandOption: true,
-  },
-  exclusivo: {
-    description: 'Es exclusivo',
-    type: 'boolean' as const,
-    demandOption: true,
-  },
-  caracteristicasEspeciales: {
-    description: 'Caracteristicas especiales del funko',
-    type: 'string' as const,
-    demandOption: true,
-  },
-  valor: {
-    description: 'Valor del funko',
-    type: 'number' as const,
-    demandOption: true,
-  },
-};
-```
-Dejando de esta manera un código más limpio, ordenado y legible.
-#### handleAddCommand
-```typescript
-const handleAddCommand = (argv: Arguments) => {
-  client.write(JSON.stringify({
-    'type': 'command', 'command': 'add', 'usuario': argv.usuario, 'id': argv.id, 'nombre': argv.nombre, 'descripcion': argv.descripcion, 'tipo': argv.tipo, 'genero': argv.genero, 'franquicia': argv.franquicia, 'numero': argv.numero, 'exclusivo': argv.exclusivo, 'caracteristicasEspeciales': argv.caracteristicasEspeciales, 'valor': argv.valor
-  }));
+## GET /:user
 
-  client.on('data', (dataJSON) => {
-    const message = JSON.parse(dataJSON.toString());
-    if (message.type === 'reply') {
-      console.log(message.output);
-    }
-  });
-};
-```
-#### handleUpdateCommand
-```typescript
-const handleUpdateCommand = (argv: Arguments) => {
-  client.write(JSON.stringify({
-    'type': 'command', 'command': 'update', 'usuario': argv.usuario, 'id': argv.id, 'descripcion': argv.descripcion, 'tipo': argv.tipo, 'genero': argv.genero, 'franquicia': argv.franquicia, 'numero': argv.numero, 'exclusivo': argv.exclusivo, 'caracteristicasEspeciales': argv.caracteristicasEspeciales, 'valor': argv.valor
-  }));
+Esta ruta debe permitir listar todos los Funko Pops de un usuario. Se prueba que la respuesta sea exitosa y que devuelva una lista de Funko Pops.
 
-  client.on('data', (dataJSON) => {
-    const message = JSON.parse(dataJSON.toString());
-    if (message.type === 'reply') {
-      console.log(message.output);
-    }
-  });
-};
-```
-#### handleRemoveCommand
-```typescript
-const handleRemoveCommand = (argv: Arguments) => {
-  client.write(JSON.stringify({ 'type': 'command', 'command': 'remove', 'usuario': argv.usuario, 'id': argv.id }));
+## GET /:user/:funkoId
 
-  client.on('data', (dataJSON) => {
-    const message = JSON.parse(dataJSON.toString());
-    if (message.type === 'reply') {
-      console.log(message.output);
-    }
-  });
-};
-```
-#### handleListCommand
-```typescript
-const handleListCommand = (argv: Arguments) => {
-  client.write(JSON.stringify({ 'type': 'command', 'command': 'list', 'usuario': argv.usuario, 'id': argv.id }));
+Esta ruta debe permitir obtener un único Funko Pop. Se prueban dos casos: éxito al obtener un Funko Pop y falla si el Funko Pop no existe.
 
-  client.on('data', (dataJSON) => {
-    const message = JSON.parse(dataJSON.toString());
-    if (message.type === 'reply') {
-      console.log(message.output);
-    }
-  });
-};
-```
-#### handleReadCommand
-```typescript
-function handleReadCommand(argv: Arguments): void {
-  client.write(JSON.stringify({ type: 'command', command: 'read', usuario: argv.usuario, id: argv.id }));
+## PATCH /:user/:funkoId
 
-  client.on('data', (dataJSON) => {
-    const message = JSON.parse(dataJSON.toString());
-    if (message.type === 'reply') {
-      console.log(message.output);
-    }
-  });
-}
-```
+Esta ruta debe permitir actualizar un Funko Pop existente. Se prueban dos casos: éxito al actualizar un Funko Pop y falla si el Funko Pop no existe.
 
-Aquí realmente todas las funciones son iguales, solo cambia el comando que se envía al servidor. En cada función se crea un objeto con los argumentos que se van a pasar por consola y se envía al servidor. En el servidor se recibe el mensaje y se ejecuta la función correspondiente.
+## DELETE /:user/:funkoId
 
-En cuanto a las actions de github, no me ha dado tiempo ya que para los tests hay que hacer dos workflows en paralelo, uno para el servidor y otro para el cliente. Y no he tenido tiempo de hacerlo.
+Esta ruta debe permitir eliminar un Funko Pop existente. Se prueban dos casos: éxito al eliminar un Funko Pop y falla si el Funko Pop no existe.
+
+Cada caso de prueba sigue un patrón similar: se realiza una solicitud HTTP a la ruta correspondiente y se comprueba la respuesta utilizando las funciones de aserción de Chai.

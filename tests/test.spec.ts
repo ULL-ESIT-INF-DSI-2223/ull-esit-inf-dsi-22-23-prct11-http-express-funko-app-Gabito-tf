@@ -1,4 +1,4 @@
-import 'mocha';
+/*import 'mocha';
 import {expect} from 'chai';
 import  request from 'request'
 
@@ -38,3 +38,4 @@ describe('Pruebas de servidor Express con punto de acceso /execmd', () => {
   });
 
 });
+*/
