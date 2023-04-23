@@ -5,6 +5,7 @@
   "main": "dist/server.js",
   "type": "module",
   "scripts": {
+    "build": "tsc",
     "server": "node dist/server.js",
     "doc": "typedoc",
     "test": "mocha",
