@@ -1,11 +1,9 @@
-name: Sonar-Cloud
-
+name: Sonar-Cloud 
 on:
   push:
-    branches: [ main ]      
+    branches: [ main ]
   pull_request:
     branches: [ main ]
-
 jobs:
   sonarcloud:
     name: SonarCloud
@@ -15,13 +13,14 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-      - name: Use Node.js 15.x
-        uses: actions/setup-node@v1
+      - name: Using Node.js 19.x
+        uses: actions/setup-node@v3
         with:
-          node-version: 15.x
+          node-version: 19.x
       - name: Installing dependencies
         run: npm i
-      - run: npm run build
+      - name: Compile
+        run: tsc
       - name: Generating coverage report
         run: npm run coverage
       - name: SonarCloud Scan
