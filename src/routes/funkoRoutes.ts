@@ -1,5 +1,5 @@
 import express from 'express';
-import { addFunko, updateFunko, deleteFunko, listFunkos, getFunko } from '../controllers/funkoController.js';
+import { addFunko, updateFunko, deleteFunko, listFunkos, getFunko} from '../controllers/funkoController.js';
 
 const router = express.Router();
 
@@ -17,7 +17,7 @@ router.post('/:user', async (req, res) => {
 
 router.patch('/:user/:funkoId', async (req, res) => {
   const user = req.params.user;
-  const funkoId = Number(req.params.funkoId);
+  const funkoId = req.params.funkoId;
   const updatedFunko = req.body;
 
   try {
@@ -30,7 +30,7 @@ router.patch('/:user/:funkoId', async (req, res) => {
 
 router.delete('/:user/:funkoId', async (req, res) => {
   const user = req.params.user;
-  const funkoId = Number(req.params.funkoId);
+  const funkoId = req.params.funkoId;
 
   try {
     const result = await deleteFunko(user, funkoId);
@@ -53,7 +53,7 @@ router.get('/:user', async (req, res) => {
 
 router.get('/:user/:funkoId', async (req, res) => {
   const user = req.params.user;
-  const funkoId = Number(req.params.funkoId);
+  const funkoId = req.params.funkoId;
 
   try {
     const result = await getFunko(user, funkoId);

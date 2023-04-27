@@ -1,5 +1,5 @@
 export type FunkoPop = {
-    id: number;
+    id: string;
     name: string;
     description: string;
     type: string;
@@ -10,4 +10,3 @@ export type FunkoPop = {
     specialFeatures: string;
     marketValue: number;
   };
-  
